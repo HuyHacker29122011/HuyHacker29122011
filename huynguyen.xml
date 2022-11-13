@@ -1,0 +1,318 @@
+CANVAS_WIDTH = 640 # 画布 的 宽
+ 
+CANVAS_HEIGHT = 480 # 画布 的 高
+ 
+CANVAS_CENTER_X = CANVAS_WIDTH / 2 # 画布 中心 的 X 轴 坐标
+ 
+CANVAS_CENTER_Y = CANVAS_HEIGHT / 2 # 画布 中心 的 Y 轴 坐标
+ 
+IMAGE_ENLARGE = 11 # 放大 比例
+ 
+HEART_COLOR = "# ff2121" # 心 的 颜色 ， 这个 是 中国 红
+ 
+ 
+ 
+def heart_ functions (t, co_ratio: float = IMAGE_ENLARGE):
+ 
+    "" "
+ 
+    “爱心 函数 生成 器”
+ 
+    : param co_ratio: 放大 比例
+ 
+    : param t: 参数
+ 
+    : trở lại: 坐标
+ 
+    "" "
+ 
+    # 基础 函数
+ 
+    x = 16 * (sin (t) ** 3)
+ 
+    y = - (13 * cos (t) - 5 * cos (2 * t) - 2 * cos (3 * t) - cos (4 * t))
+ 
+ 
+    # 放大
+ 
+    x * = thu nhỏ
+ 
+    y * = thu nhỏ
+ 
+ 
+    # 移到 画布 中央
+ 
+    x + = CANVAS_CENTER_X
+ 
+    y + = CANVAS_CENTER_Y
+ 
+ 
+    trả về int (x), int (y)
+ 
+ 
+ 
+def scatter_inside (x, y, beta = 0,15):
+ 
+    "" "
+ 
+    随机 内部 扩散
+ 
+    : param x: 原 x
+ 
+    : param y: 原 y
+ 
+    : param beta: 强度
+ 
+    : trở về: 新 坐标
+ 
+    "" "
+ 
+    ratio_x = - beta * log (random.random ())
+ 
+    ratio_y = - beta * log (random.random ())
+ 
+ 
+    dx = ratio_x * (x - CANVAS_CENTER_X)
+ 
+    dy = ratio_y * (y - CANVAS_CENTER_Y)
+ 
+ 
+    trả về x - dx, y - dy
+ 
+ 
+ 
+def thu nhỏ (x, y, tỷ lệ):
+ 
+    "" "
+ 
+    抖动
+ 
+    : param x: 原 x
+ 
+    : param y: 原 y
+ 
+    : tỷ lệ tham số: 比例
+ 
+    : trở về: 新 坐标
+ 
+    "" "
+ 
+    lực = -1 / (((x - CANVAS_CENTER_X) ** 2 + (y - CANVAS_CENTER_Y) ** 2) ** 0.6) # 这个 参数 ...
+ 
+    dx = tỷ lệ * lực * (x - CANVAS_CENTER_X)
+ 
+    dy = tỷ lệ * lực * (y - CANVAS_CENTER_Y)
+ 
+    trả về x - dx, y - dy
+ 
+ 
+ 
+đường cong def (p):
+ 
+    "" "
+ 
+    自 定义 曲线 函数 ， 调整 跳动 周期
+ 
+    : param p: 参数
+ 
+    : trở lại: 正弦
+ 
+    "" "
+ 
+    # 可以 尝试 换 其他 的 动态 函数 ， 达到 更有 力量 的 效果 （贝塞尔？）
+ 
+    trả về 2 * (2 * sin (4 * p)) / (2 * pi)
+ 
+ 
+ 
+lớp học Trái tim:
+ 
+    "" "
+ 
+    爱心 类
+ 
+    "" "
+ 
+ 
+    def __init __ (self, create_frame = 20):
+ 
+        self._points = set () # 原始 爱心 坐标 集合
+ 
+        self._edge_diffusion_points = set () # 边缘 扩散 效果 点 坐标 集合
+ 
+        self._center_diffusion_points = set () # 中心 扩散 效果 点 坐标 集合
+ 
+        self.all_points = {} # 每 帧 动态 点 坐标
+ 
+        self.build (2000)
+ 
+ 
+        self.random_halo = 1000
+ 
+ 
+        self.generate_frame = create_frame
+ 
+        cho khung trong phạm vi (create_frame):
+ 
+            self.calc (khung)
+ 
+ 
+    xây dựng def (bản thân, số):
+ 
+        # 爱心
+ 
+        cho _ trong phạm vi (số):
+ 
+            t = random.uniform (0, 2 * pi) # 随机 不到 的 地方 造成 爱心 有 缺口
+ 
+            x, y = tim_cung (t)
+ 
+            self._points.add ((x, y))
+ 
+ 
+        # 爱心 内 扩散
+ 
+        cho _x, _y trong danh sách (self._points):
+ 
+            cho _ trong phạm vi (3):
+ 
+                x, y = scatter_inside (_x, _y, 0,05)
+ 
+                self._edge_diffusion_points.add ((x, y))
+ 
+ 
+        # 爱心 内 再次 扩散
+ 
+        point_list = list (self._points)
+ 
+        cho _ trong phạm vi (4000):
+ 
+            x, y = random.choice (point_list)
+ 
+            x, y = scatter_inside (x, y, 0,17)
+ 
+            self._center_diffusion_points.add ((x, y))
+ 
+ 
+    @staticmethod
+ 
+    def calc_position (x, y, ratio):
+ 
+        # 调整 缩放 比例
+ 
+        lực = 1 / (((x - CANVAS_CENTER_X) ** 2 + (y - CANVAS_CENTER_Y) ** 2) ** 0.520) # 魔法 参数
+ 
+ 
+        dx = ratio * force * (x - CANVAS_CENTER_X) + random.randint (-1, 1)
+ 
+        dy = ratio * force * (y - CANVAS_CENTER_Y) + random.randint (-1, 1)
+ 
+ 
+        trả về x - dx, y - dy
+ 
+ 
+    def calc (self, create_frame):
+ 
+        ratio = 10 * curve (create_frame / 10 * pi) # 圆滑 的 周期 的 缩放 比例
+ 
+ 
+        halo_radius = int (4 + 6 * (1 + đường cong (create_frame / 10 * pi)))
+ 
+        halo_number = int (3000 + 4000 * abs (curve (create_frame / 10 * pi) ** 2))
+ 
+ 
+        all_points = []
+ 
+ 
+        # 光环
+ 
+        heart_halo_point = set () # 光环 的 点 坐标 集合
+ 
+        cho _ trong phạm vi (halo_number):
+ 
+            t = random.uniform (0, 2 * pi) # 随机 不到 的 地方 造成 爱心 有 缺口
+ 
+            x, y = tim_mục (t, co_sự = 11,6) # 魔法 参数
+ 
+            x, y = thu nhỏ (x, y, halo_radius)
+ 
+            if (x, y) not in heart_halo_point:
+ 
+                # 处理 新 的 点
+ 
+                heart_halo_point.add ((x, y))
+ 
+                x + = random.randint (-14, 14)
+ 
+                y + = random.randint (-14, 14)
+ 
+                size = random.choice ((1, 2, 2))
+ 
+                all_points.append ((x, y, size))
+ 
+ 
+        # 轮廓
+ 
+        cho x, y trong self._points:
+ 
+            x, y = self.calc_position (x, y, tỷ lệ)
+ 
+            size = random.randint (1, 3)
+ 
+            all_points.append ((x, y, size))
+ 
+ 
+        # 内容
+ 
+        cho x, y trong self._edge_diffusion_points:
+ 
+            x, y = self.calc_position (x, y, tỷ lệ)
+ 
+            size = random.randint (1, 2)
+ 
+            all_points.append ((x, y, size))
+ 
+ 
+        cho x, y trong self._center_diffusion_points:
+ 
+            x, y = self.calc_position (x, y, tỷ lệ)
+ 
+            size = random.randint (1, 2)
+ 
+            all_points.append ((x, y, size))
+ 
+ 
+        self.all_points [create_frame] = all_points
+ 
+ 
+    def render (self, render_canvas, render_frame):
+ 
+        cho x, y, kích thước trong self.all_points [render_frame% self.generate_frame]:
+ 
+            render_canvas.create_rectangle (x, y, x + size, y + size, width = 0, fill = HEART_COLOR)
+ 
+ 
+ 
+def draw (main: Tk, render_canvas: Canvas, render_heart: Heart, render_frame = 0):
+ 
+    render_canvas.delete ('tất cả')
+ 
+    render_heart.render (render_canvas, render_frame)
+ 
+    main. after (160, draw, main, render_canvas, render_heart, render_frame + 1)
+ 
+ 
+ 
+nếu __name__ == '__main__':
+ 
+    root = Tk () # 一个 Tk
+ 
+    canvas = Canvas (root, bg = 'black', height = CANVAS_HEIGHT, width = CANVAS_WIDTH)
+ 
+    canvas.pack ()
+ 
+    tim = Trái tim () # 心
+ 
+    vẽ (gốc, canvas, trái tim) # 开始 画画 ~
+ 
+    root.mainloop ()
